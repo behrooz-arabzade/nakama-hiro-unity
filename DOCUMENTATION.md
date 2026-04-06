@@ -2,7 +2,7 @@
 
 Unity Package Manager (UPM) client for **nakama-hiro**: typed RPC wrappers and optional Unity `MonoBehaviour` facades on top of [Nakama Unity](https://github.com/heroiclabs/nakama-unity).
 
-The **authoritative RPC contract** (payload shapes and id strings) lives in the sibling server repository: `nakama-hiro/src/main.ts` (header comment) and `nakama-hiro/src/features/*/register*Rpcs.ts`. This package mirrors those ids in `HiroRpcIds` and uses **snake_case** on the wire via Newtonsoft.Json.
+The **authoritative RPC contract** (payload shapes and id strings) lives in the server repository **[nakama-hiro](https://github.com/behrooz-arabzade/nakama-hiro)**: [`src/main.ts`](https://github.com/behrooz-arabzade/nakama-hiro/blob/main/src/main.ts) (header comment) and `src/features/*/register*Rpcs.ts`. This package mirrors those ids in `HiroRpcIds` and uses **snake_case** on the wire via Newtonsoft.Json.
 
 ---
 
@@ -16,20 +16,27 @@ The **authoritative RPC contract** (payload shapes and id strings) lives in the 
 
 ### Install the package
 
-**Local path (development):** in your Unity project’s `Packages/manifest.json`:
+**From GitHub (recommended):** in your Unity project’s `Packages/manifest.json`:
 
 ```json
 {
   "dependencies": {
-    "com.nakamahiro.client": "file:../../path/to/nakama-hiro-unity"
+    "com.nakamahiro.client": "https://github.com/behrooz-arabzade/nakama-hiro-unity.git"
   }
 }
 ```
 
-Adjust the path relative to your Unity project folder.
+Pin a branch or tag with a URL suffix such as `#main` or `#v0.2.0`. Unity **Window → Package Manager → + → Add package from git URL…** accepts the same URL.
 
-**From Git:** Unity **Window → Package Manager → + → Add package from git URL…**  
-If the package is in a subfolder of the repo, append `?path=/subfolder` (same pattern as [Nakama’s Unity install docs](https://heroiclabs.com/docs/nakama/client-libraries/unity/)).
+If the package ever lives in a **subfolder** of the repo, append `?path=/subfolder` (same pattern as [Nakama’s Unity install docs](https://heroiclabs.com/docs/nakama/client-libraries/unity/)).
+
+**Local path (fork / offline dev):** point `com.nakamahiro.client` at a clone on disk, for example:
+
+```json
+"com.nakamahiro.client": "file:../../path/to/nakama-hiro-unity"
+```
+
+Adjust the path relative to your Unity project folder.
 
 Dependencies are declared in `package.json` (`com.heroiclabs.nakama-unity`, `com.unity.nuget.newtonsoft-json`).
 
@@ -224,7 +231,7 @@ coordinator.ConfigureSessionProvider(new DelegateNakamaSessionProvider(
 
 - **C# API:** explore **NakamaHiroClient** properties (`Achievements`, `Inventory`, `Economy`, `Auctions`, `Progression`, `Stats`, `Streaks`, `Leaderboards`, `EventLeaderboards`, `Energy`, `Challenges`, `Unlockables`).
 - **RPC string ids:** **HiroRpcIds** (`achievements_get`, `economy_wallet_get`, …).
-- **Request/response shapes:** `nakama-hiro/src/main.ts` comment block (lines 1–89) and Hiro concepts docs linked there.
+- **Request/response shapes:** [nakama-hiro `src/main.ts`](https://github.com/behrooz-arabzade/nakama-hiro/blob/main/src/main.ts) header comment and Hiro concepts docs linked there.
 
 ---
 
@@ -237,4 +244,4 @@ coordinator.ConfigureSessionProvider(new DelegateNakamaSessionProvider(
 - **Runtime/Unity/NakamaHiroSystemObserver.cs** — disposable `Subscribe` helper for those events.
 - **Runtime/Unity/NakamaHiroObservableState.cs** — last-value cache and `Changed` for UI binding.
 
-For day-to-day integration work, keep the **nakama-hiro** server repo open alongside this package so RPC and config changes stay aligned.
+For day-to-day integration work, keep the **[nakama-hiro](https://github.com/behrooz-arabzade/nakama-hiro)** server repository open alongside this package so RPC and config changes stay aligned.
