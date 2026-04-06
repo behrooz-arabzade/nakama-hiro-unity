@@ -2,5 +2,8 @@
 
 - **Server contract:** Implement RPC names and JSON payloads to match the sibling **nakama-hiro** repo. Primary spec: `nakama-hiro/src/main.ts` lines 1–89 (comment block). Registration ids: `src/features/*/register*Rpcs.ts`.
 - **Casing:** Server uses **snake_case** in JSON; mirror that in C# DTOs (e.g. `System.Text.Json` snake_case naming or Newtonsoft settings).
-- **Stack:** This package depends on **com.heroiclabs.nakama-unity**; reference assembly **NakamaRuntime** from `NakamaHiro.Client.asmdef`. Call RPCs via `IClient.RpcAsync(ISession, string id, string payload, ...)`.
+- **Stack:** Depends on **com.heroiclabs.nakama-unity** (`NakamaRuntime`) and **com.unity.nuget.newtonsoft-json** (`Newtonsoft.Json`) for snake_case RPC JSON.
+  - **NakamaHiro.Client** (`Runtime/NakamaHiro.Client.asmdef`): engine-agnostic `NakamaHiroClient` + DTOs (`noEngineReferences: true`).
+  - **NakamaHiro.Client.Unity** (`Runtime/Unity/NakamaHiro.Client.Unity.asmdef`): `NakamaHiroCoordinator`, session provider hook, and optional feature `MonoBehaviour` facades with events.
+- **RPCs:** Prefer `NakamaHiroClient` (wraps `IClient.RpcAsync`); ids are `HiroRpcIds` / sibling `register*Rpcs.ts`.
 - **Scope:** Keep this package free of game-specific code; only reusable client surface and types.

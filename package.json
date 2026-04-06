@@ -1,6 +1,6 @@
 {
   "name": "com.nakamahiro.client",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "unity": "2022.3",
   "displayName": "Nakama Hiro Client",
   "description": "Unity client helpers for Hiro-style RPCs served by the nakama-hiro TypeScript runtime. Depends on Heroic Labs Nakama Unity.",
@@ -9,6 +9,7 @@
     "name": "Nakama Hiro"
   },
   "dependencies": {
-    "com.heroiclabs.nakama-unity": "https://github.com/heroiclabs/nakama-unity.git?path=/Packages/Nakama#v3.21.1"
+    "com.heroiclabs.nakama-unity": "https://github.com/heroiclabs/nakama-unity.git?path=/Packages/Nakama#v3.21.1",
+    "com.unity.nuget.newtonsoft-json": "3.2.1"
   }
 }

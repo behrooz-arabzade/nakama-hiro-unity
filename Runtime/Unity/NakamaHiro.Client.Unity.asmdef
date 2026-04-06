@@ -1,7 +1,7 @@
 {
-  "name": "NakamaHiro.Client",
-  "rootNamespace": "NakamaHiro.Client",
-  "references": ["NakamaRuntime", "Newtonsoft.Json"],
+  "name": "NakamaHiro.Client.Unity",
+  "rootNamespace": "NakamaHiro.Client.Unity",
+  "references": ["NakamaHiro.Client", "NakamaRuntime"],
   "includePlatforms": [],
   "excludePlatforms": [],
   "allowUnsafeCode": false,
@@ -10,5 +10,5 @@
   "autoReferenced": true,
   "defineConstraints": [],
   "versionDefines": [],
-  "noEngineReferences": true
+  "noEngineReferences": false
 }
