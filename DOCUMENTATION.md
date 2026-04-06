@@ -38,7 +38,7 @@ Dependencies are declared in `package.json` (`com.heroiclabs.nakama-unity`, `com
 | Assembly | Purpose |
 |----------|---------|
 | **NakamaHiro.Client** | Engine-agnostic: `NakamaHiroClient`, DTOs, `HiroRpcInvoker`, `HiroJson`, `HiroRpcIds`. |
-| **NakamaHiro.Client.Unity** | Unity integration: `NakamaHiroCoordinator`, `INakamaSessionProvider`, optional `NakamaHiro*System` facades. |
+| **NakamaHiro.Client.Unity** | Unity integration: `NakamaHiroCoordinator`, `INakamaSessionProvider`, optional `NakamaHiro*System` facades, `NakamaHiroSystemObserver`, `NakamaHiroObservableState<T>`. |
 
 Reference **NakamaHiro.Client** from non-Unity assemblies if you share client code; use **NakamaHiro.Client.Unity** only where `UnityEngine` is available.
 
@@ -116,6 +116,81 @@ var wallet = await economy.WalletGetAsync(cancellationToken);
 
 Ensure a **NakamaHiroCoordinator** is assigned or found in parents (**NakamaHiroFeatureSystemBase** uses `GetComponentInParent` when the field is unset).
 
+### Observe system changes (vs Hiro Unity’s `SystemObserver`)
+
+Heroic Labs’ [Observe System Changes](https://heroiclabs.com/docs/hiro/unity/getting-started/observing-system-changes/) doc targets the **commercial Hiro Unity SDK** (`SystemObserver`, `IObserver<T>`, in-client system state). This package is an **RPC client** for **nakama-hiro**: there is no shared Hiro system graph, but you get the same *practical* outcome—**UI updates when RPCs complete**—by subscribing to the `*Completed` events on **`NakamaHiro*System`** (or by handling `await` results from **`NakamaHiroClient`**).
+
+**1. Subscribe to `*Completed` events** (after each successful call to the matching `*Async` method):
+
+```csharp
+using System;
+using NakamaHiro.Client;
+using NakamaHiro.Client.Unity;
+using UnityEngine;
+
+public sealed class WalletHud : MonoBehaviour
+{
+    [SerializeField] private NakamaHiroEconomySystem _economy;
+
+    void OnEnable()
+    {
+        _economy.WalletGetCompleted += OnWallet;
+    }
+
+    void OnDisable()
+    {
+        _economy.WalletGetCompleted -= OnWallet;
+    }
+
+    void OnWallet(EconomyWalletGetResponse wallet)
+    {
+        // Refresh UI from wallet
+    }
+
+    public async void RefreshWallet()
+    {
+        await _economy.WalletGetAsync(destroyCancellationToken);
+    }
+}
+```
+
+**2. Disposable subscription with `NakamaHiroSystemObserver`** (same pattern, easier to pair with pooling or dynamic UI):
+
+```csharp
+using System;
+using NakamaHiro.Client;
+using NakamaHiro.Client.Unity;
+
+IDisposable sub = NakamaHiroSystemObserver.Subscribe<EconomyWalletGetResponse>(
+    h => economy.WalletGetCompleted += h,
+    h => economy.WalletGetCompleted -= h,
+    w => { /* update UI */ });
+
+// later: sub.Dispose();
+```
+
+**3. Cached last value for binding** — **`NakamaHiroObservableState<T>`** stores the latest DTO and raises **`Changed`** whenever **`Set`** runs. Use **`MirrorFrom`** to tie it to a feature event, or call **`Set`** yourself after **`await`**:
+
+```csharp
+using NakamaHiro.Client;
+using NakamaHiro.Client.Unity;
+
+var walletState = new NakamaHiroObservableState<EconomyWalletGetResponse>();
+using (walletState.MirrorFrom(
+           h => economy.WalletGetCompleted += h,
+           h => economy.WalletGetCompleted -= h))
+{
+    walletState.Changed += w => { /* bind to UI */ };
+    await economy.WalletGetAsync(cancellationToken);
+}
+```
+
+Facades do **not** auto-refresh: something in your game must call **`WalletGetAsync`** (or another `*Async`) when the player acts, on scene load, or on a timer.
+
+**4. Cross-device or server-pushed freshness** — RPC completion events only run when **this client** invoked an RPC. If another session changes data, use **Nakama realtime** (socket notifications you emit from server code, or built-in notifications) and, in the handler, call the relevant **`NakamaHiro*System.*Async`** to refetch—or **poll** `*Async` on a **`MonoBehaviour`** interval. Wire that in your game assembly; this package stays transport-agnostic.
+
+**Threading:** If you touch **UnityEngine** APIs from handlers, ensure callbacks run on the main thread (Nakama Unity often completes awaits on the main thread; verify for your integration).
+
 ### JSON: snake_case and DTOs
 
 Serialization uses **HiroJson.DefaultSettings**: **SnakeCaseNamingStrategy** for property names, ignored nulls, and ignored missing members on deserialize. Use **PascalCase** in C# properties; the server still sees **snake_case** JSON.
@@ -158,5 +233,8 @@ coordinator.ConfigureSessionProvider(new DelegateNakamaSessionProvider(
 - **README.md** — short overview, install snippet, requirements.
 - **CHANGELOG.md** — version history.
 - **AGENTS.md** — contributor notes (contract, casing, assembly split).
+- **Runtime/Unity/NakamaHiroUnityFeatureSystems.cs** — `NakamaHiro*System` facades and `*Completed` events.
+- **Runtime/Unity/NakamaHiroSystemObserver.cs** — disposable `Subscribe` helper for those events.
+- **Runtime/Unity/NakamaHiroObservableState.cs** — last-value cache and `Changed` for UI binding.
 
 For day-to-day integration work, keep the **nakama-hiro** server repo open alongside this package so RPC and config changes stay aligned.
