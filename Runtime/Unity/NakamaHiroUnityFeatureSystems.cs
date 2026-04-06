@@ -686,4 +686,21 @@ namespace NakamaHiro.Client.Unity
             return r;
         }
     }
+
+    public sealed class NakamaHiroServerLoadBalancerSystem : NakamaHiroFeatureSystemBase
+    {
+        public event Action<ServerLbRegionsListResponse> RegionsListCompleted;
+
+        public async Task<ServerLbRegionsListResponse> RegionsListAsync(
+            ServerLbRegionsListRequest request = null,
+            CancellationToken cancellationToken = default)
+        {
+            var r = await Hiro.ServerLoadBalancer.RegionsListAsync(
+                await SessionAsync(cancellationToken),
+                request,
+                cancellationToken);
+            RegionsListCompleted?.Invoke(r);
+            return r;
+        }
+    }
 }

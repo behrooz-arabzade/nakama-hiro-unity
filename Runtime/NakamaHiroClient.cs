@@ -24,6 +24,7 @@ namespace NakamaHiro.Client
             Energy = new EnergyHiroClient(invoker);
             Challenges = new ChallengesHiroClient(invoker);
             Unlockables = new UnlockablesHiroClient(invoker);
+            ServerLoadBalancer = new ServerLoadBalancerHiroClient(invoker);
         }
 
         public AchievementsHiroClient Achievements { get; }
@@ -38,5 +39,6 @@ namespace NakamaHiro.Client
         public EnergyHiroClient Energy { get; }
         public ChallengesHiroClient Challenges { get; }
         public UnlockablesHiroClient Unlockables { get; }
+        public ServerLoadBalancerHiroClient ServerLoadBalancer { get; }
     }
 }
