@@ -83,6 +83,9 @@ namespace NakamaHiro.Client
         public const string UnlockablesQueueRemove = "unlockables_queue_remove";
         public const string UnlockablesQueueSet = "unlockables_queue_set";
 
+        public const string MatchManagerGet  = "match_manager_get";
+        public const string MatchManagerMine = "match_manager_mine";
+
         public const string ServerLbRegionsList = "server_lb_regions_list";
     }
 }

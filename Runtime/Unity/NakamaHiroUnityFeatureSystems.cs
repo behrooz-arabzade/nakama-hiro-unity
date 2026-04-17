@@ -687,6 +687,28 @@ namespace NakamaHiro.Client.Unity
         }
     }
 
+    public sealed class NakamaHiroMatchManagerSystem : NakamaHiroFeatureSystemBase
+    {
+        public event Action<MatchManagerGetResponse>  GetCompleted;
+        public event Action<MatchManagerMineResponse> MineCompleted;
+
+        public async Task<MatchManagerGetResponse> GetAsync(
+            MatchManagerGetRequest request,
+            CancellationToken cancellationToken = default)
+        {
+            var r = await Hiro.MatchManager.GetAsync(await SessionAsync(cancellationToken), request, cancellationToken);
+            GetCompleted?.Invoke(r);
+            return r;
+        }
+
+        public async Task<MatchManagerMineResponse> MineAsync(CancellationToken cancellationToken = default)
+        {
+            var r = await Hiro.MatchManager.MineAsync(await SessionAsync(cancellationToken), cancellationToken);
+            MineCompleted?.Invoke(r);
+            return r;
+        }
+    }
+
     public sealed class NakamaHiroServerLoadBalancerSystem : NakamaHiroFeatureSystemBase
     {
         public event Action<ServerLbRegionsListResponse> RegionsListCompleted;
