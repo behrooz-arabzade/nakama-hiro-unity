@@ -9,23 +9,25 @@ namespace NakamaHiro.Client
     /// </summary>
     public sealed class NakamaHiroClient
     {
+        private readonly HiroRpcInvoker _invoker;
+
         public NakamaHiroClient(IClient client, JsonSerializerSettings jsonSettings = null)
         {
-            var invoker = new HiroRpcInvoker(client, jsonSettings);
-            Achievements = new AchievementsHiroClient(invoker);
-            Inventory = new InventoryHiroClient(invoker);
-            Economy = new EconomyHiroClient(invoker);
-            Auctions = new AuctionsHiroClient(invoker);
-            Progression = new ProgressionHiroClient(invoker);
-            Stats = new StatsHiroClient(invoker);
-            Streaks = new StreaksHiroClient(invoker);
-            Leaderboards = new LeaderboardsHiroClient(invoker);
-            EventLeaderboards = new EventLeaderboardsHiroClient(invoker);
-            Energy = new EnergyHiroClient(invoker);
-            Challenges = new ChallengesHiroClient(invoker);
-            Unlockables = new UnlockablesHiroClient(invoker);
-            MatchManager = new MatchManagerHiroClient(invoker);
-            ServerLoadBalancer = new ServerLoadBalancerHiroClient(invoker);
+            _invoker = new HiroRpcInvoker(client, jsonSettings);
+            Achievements = new AchievementsHiroClient(_invoker);
+            Inventory = new InventoryHiroClient(_invoker);
+            Economy = new EconomyHiroClient(_invoker);
+            Auctions = new AuctionsHiroClient(_invoker);
+            Progression = new ProgressionHiroClient(_invoker);
+            Stats = new StatsHiroClient(_invoker);
+            Streaks = new StreaksHiroClient(_invoker);
+            Leaderboards = new LeaderboardsHiroClient(_invoker);
+            EventLeaderboards = new EventLeaderboardsHiroClient(_invoker);
+            Energy = new EnergyHiroClient(_invoker);
+            Challenges = new ChallengesHiroClient(_invoker);
+            Unlockables = new UnlockablesHiroClient(_invoker);
+            MatchManager = new MatchManagerHiroClient(_invoker);
+            ServerLoadBalancer = new ServerLoadBalancerHiroClient(_invoker);
         }
 
         public AchievementsHiroClient Achievements { get; }
@@ -42,5 +44,11 @@ namespace NakamaHiro.Client
         public UnlockablesHiroClient Unlockables { get; }
         public MatchManagerHiroClient MatchManager { get; }
         public ServerLoadBalancerHiroClient ServerLoadBalancer { get; }
+
+        /// <summary>
+        /// Shared RPC invoker. Pass to game-specific *HiroClient constructors
+        /// so they inherit the same IClient and JSON settings as the base clients.
+        /// </summary>
+        public HiroRpcInvoker Invoker => _invoker;
     }
 }

@@ -63,5 +63,29 @@ namespace NakamaHiro.Client.Unity
 
             return _sessionProvider.GetSessionAsync(cancellationToken);
         }
+
+        private object _gameExtensions;
+
+        /// <summary>
+        /// Stores a game-specific extensions object (e.g. GameHiroClient).
+        /// Call from a bootstrap MonoBehaviour during Awake, before any feature system
+        /// calls <see cref="GetGameExtensions{T}"/>.
+        /// </summary>
+        public void SetGameExtensions(object extensions) =>
+            _gameExtensions = extensions ?? throw new ArgumentNullException(nameof(extensions));
+
+        /// <summary>
+        /// Returns the stored game extensions cast to <typeparamref name="T"/>.
+        /// Throws <see cref="InvalidOperationException"/> if not set or <see cref="InvalidCastException"/> if wrong type.
+        /// </summary>
+        public T GetGameExtensions<T>() where T : class
+        {
+            if (_gameExtensions is T typed) return typed;
+            if (_gameExtensions == null)
+                throw new InvalidOperationException(
+                    $"Game extensions not set. Call SetGameExtensions before GetGameExtensions<{typeof(T).Name}>().");
+            throw new InvalidCastException(
+                $"Game extensions is {_gameExtensions.GetType().Name}, not {typeof(T).Name}.");
+        }
     }
 }

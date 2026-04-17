@@ -85,7 +85,51 @@ The server restricts some RPCs to operator/admin user ids (configured through en
 
 They belong in Nakama Console, server-side scripts, or a separate admin tool — not in the shipped game client. Public, non-admin counterparts from the same feature (e.g. `server_lb_regions_list`) are fine to expose.
 
-## How the package is consumed
+## Game-specific extension pattern
+
+The server project (`nakama-hiro`) uses a base/game split: `src/hiro/` is the upstream base tree (never edited per-clone) and `src/game/` is the game-owned extension seam. This package mirrors that split: the SDK is never edited by game projects; all game-specific RPC wrappers live in the **host Unity project's** own assemblies.
+
+### Two SDK extension points
+
+- **`NakamaHiroClient.Invoker`** — the shared `HiroRpcInvoker`. Pass to game `*HiroClient` constructors so they inherit the same `IClient` and `HiroJson` settings.
+- **`NakamaHiroCoordinator.SetGameExtensions` / `GetGameExtensions<T>`** — opaque slot for the game's root extensions object. The SDK has zero compile-time knowledge of game types; the cast lives entirely in game code.
+
+### What game developers create in their host Unity project
+
+Mirror `nakama-hiro/src/game/` under `Assets/Game/HiroExtensions/`:
+
+```
+Assets/Game/
+  HiroExtensions/
+    Game.HiroExtensions.asmdef           ← noEngineReferences: true, refs NakamaHiro.Client
+    GameHiroRpcIds.cs                    ← game RPC id constants (namespace Game.HiroExtensions)
+    GameHiroClient.cs                    ← wraps NakamaHiroClient; holds all game feature clients
+    Features/<Feature>/
+      <Feature>Dtos.cs
+      <Feature>HiroClient.cs             ← takes HiroRpcInvoker, same shape as base *HiroClient
+  HiroExtensions.Unity/
+    Game.HiroExtensions.Unity.asmdef    ← refs NakamaHiro.Client + NakamaHiro.Client.Unity + Game.HiroExtensions
+    GameHiroCoordinatorBootstrap.cs     ← [DefaultExecutionOrder(-50)] Awake → SetGameExtensions
+    Features/<Feature>/
+      NakamaHiro<Feature>System.cs      ← optional; inherits NakamaHiroFeatureSystemBase
+```
+
+### Key conventions for game extension code
+
+- **Game feature client constructors are `public`** (not `internal`); game assemblies aren't the SDK.
+- **`GameHiroClient` wraps `NakamaHiroClient`** with a `public NakamaHiroClient Hiro` property — do not try to inherit (`sealed`).
+- **`GameHiroCoordinatorBootstrap`** is the single seam file. Add a new feature by adding its client to `GameHiroClient`'s constructor; the bootstrap needs no change.
+- **Game `NakamaHiro*System` facades** get their feature client via `Coordinator.GetGameExtensions<GameHiroClient>().<Feature>` — the same property chain every other call site uses.
+- **Namespace**: `Game.HiroExtensions` (engine-agnostic tier), `Game.HiroExtensions.Unity` (Unity tier). Never `NakamaHiro.*` — that namespace is SDK-only.
+
+### What NOT to do
+
+- Do **not** edit any file under `Runtime/` for game-specific RPCs. `HiroRpcIds`, base feature clients, and the 14 `NakamaHiro*System` facades are upstream SDK; game ids and DTOs live in the host project.
+- Do **not** subclass `NakamaHiroClient` or add game feature properties to it.
+
+See `DOCUMENTATION.md` → "Adding game-specific RPCs (structured extension pattern)" for the complete worked example with all file contents.
+
+
 
 Consumers add it to their Unity project's `Packages/manifest.json`:
 
