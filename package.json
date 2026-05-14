@@ -9,7 +9,6 @@
     "name": "Nakama Hiro"
   },
   "dependencies": {
-    "com.heroiclabs.nakama-unity": "https://github.com/heroiclabs/nakama-unity.git?path=/Packages/Nakama#v3.21.1",
     "com.unity.nuget.newtonsoft-json": "3.2.1"
   }
 }

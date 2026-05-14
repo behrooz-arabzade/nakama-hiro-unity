@@ -44,7 +44,7 @@ namespace NakamaHiro.Client.Unity
         protected virtual void Awake()
         {
             if (_nakamaClient == null)
-                _nakamaClient = new Client(_scheme, _host, _port, _serverKey, UnityWebRequestAdapter.Instance);
+                _nakamaClient = new Nakama.Client(_scheme, _host, _port, _serverKey, UnityWebRequestAdapter.Instance);
 
             if (_hiro == null)
                 _hiro = new NakamaHiroClient(_nakamaClient);
